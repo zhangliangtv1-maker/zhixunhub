@@ -1,0 +1,8 @@
+{
+  "build": {
+    "buildCommand": "cd ../.. && pnpm install && pnpm --filter @workspace/api-server run build"
+  },
+  "deploy": {
+    "startCommand": "cd ../.. && pnpm --filter @workspace/api-server run start"
+  }
+}
