@@ -1,0 +1,32 @@
+kind = "web"
+previewPath = "/"
+title = "NewsHub 新闻聚合平台"
+version = "1.0.0"
+id = "artifacts/news-hub"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24595
+
+[services.development]
+run = "pnpm --filter @workspace/news-hub run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/news-hub", "run", "build" ]
+
+[services.production.run]
+args = ["node", "artifacts/news-hub/server.mjs"]
+
+[services.production.run.env]
+PORT = "24595"
+NODE_ENV = "production"
+
+[services.env]
+PORT = "24595"
+BASE_PATH = "/"

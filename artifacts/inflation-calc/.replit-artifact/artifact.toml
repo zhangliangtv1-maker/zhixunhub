@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/inflation-calc/"
+title = "InflationCalc — Financial Calculators"
+version = "1.0.0"
+id = "artifacts/inflation-calc"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/inflation-calc/" ]
+localPort = 22963
+
+[services.development]
+run = "pnpm --filter @workspace/inflation-calc run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/inflation-calc", "run", "build" ]
+publicDir = "artifacts/inflation-calc/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22963"
+BASE_PATH = "/inflation-calc/"

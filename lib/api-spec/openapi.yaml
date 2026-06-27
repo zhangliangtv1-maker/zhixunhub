@@ -1,0 +1,358 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: NewsHub API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: articles
+    description: Article operations
+  - name: comments
+    description: Comment operations
+  - name: stats
+    description: Stats and aggregations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /articles:
+    get:
+      operationId: listArticles
+      tags: [articles]
+      summary: List articles
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleList"
+
+  /articles/{id}:
+    get:
+      operationId: getArticle
+      tags: [articles]
+      summary: Get article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Article details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "404":
+          description: Not found
+
+  /articles/{id}/adjacent:
+    get:
+      operationId: getAdjacentArticles
+      tags: [articles]
+      summary: Get previous and next articles relative to a given article ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Adjacent articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdjacentArticles"
+
+  /articles/trigger-fetch:
+    post:
+      operationId: triggerFetch
+      tags: [articles]
+      summary: Manually trigger article fetch
+      responses:
+        "200":
+          description: Fetch triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriggerResult"
+
+  /comments:
+    get:
+      operationId: listComments
+      tags: [comments]
+      summary: List comments for an article
+      parameters:
+        - name: article_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+
+  /stats/summary:
+    get:
+      operationId: getStatsSummary
+      tags: [stats]
+      summary: Get dashboard stats summary
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSummary"
+
+  /stats/categories:
+    get:
+      operationId: listCategories
+      tags: [stats]
+      summary: List all categories with article counts
+      responses:
+        "200":
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryCount"
+
+  /stats/top-articles:
+    get:
+      operationId: listTopArticles
+      tags: [stats]
+      summary: List top articles by view count
+      responses:
+        "200":
+          description: Top articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopArticle"
+
+  /stats/daily-views:
+    get:
+      operationId: getDailyViews
+      tags: [stats]
+      summary: Get daily view counts from view events log
+      parameters:
+        - in: query
+          name: days
+          schema:
+            type: integer
+            default: 14
+      responses:
+        "200":
+          description: Daily view counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyViews"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    Article:
+      type: object
+      required: [id, title, created_at, reading_time, hot_score]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        source_url:
+          type: ["string", "null"]
+        image_url:
+          type: ["string", "null"]
+        summary:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        ai_comment:
+          type: ["string", "null"]
+          description: AI-generated industry commentary preview
+        share_text:
+          type: ["string", "null"]
+          description: AI-generated one-liner for sharing to WeChat/social media
+        created_at:
+          type: string
+          format: date-time
+        reading_time:
+          type: integer
+          description: Estimated reading time in minutes
+        hot_score:
+          type: integer
+          description: Trending score 0-100
+
+    ArticleList:
+      type: object
+      required: [articles, total]
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+        total:
+          type: integer
+
+    Comment:
+      type: object
+      required: [id, article_id, content, commenter_name, created_at]
+      properties:
+        id:
+          type: integer
+        article_id:
+          type: integer
+        content:
+          type: string
+        commenter_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    AdjacentArticleRef:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+
+    AdjacentArticles:
+      type: object
+      required: []
+      properties:
+        prev:
+          oneOf:
+            - $ref: "#/components/schemas/AdjacentArticleRef"
+            - type: "null"
+        next:
+          oneOf:
+            - $ref: "#/components/schemas/AdjacentArticleRef"
+            - type: "null"
+
+    TriggerResult:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    StatsSummary:
+      type: object
+      required: [total_articles, total_comments, articles_today, top_category, total_subscribers, subscribers_today]
+      properties:
+        total_articles:
+          type: integer
+        total_comments:
+          type: integer
+        articles_today:
+          type: integer
+        top_category:
+          type: ["string", "null"]
+        total_subscribers:
+          type: integer
+        subscribers_today:
+          type: integer
+
+    CategoryCount:
+      type: object
+      required: [category, count]
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+
+    TopArticle:
+      type: object
+      required: [id, title, views]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: ["string", "null"]
+        views:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    DailyViews:
+      type: object
+      required: [date, views]
+      properties:
+        date:
+          type: string
+          description: "YYYY-MM-DD"
+        views:
+          type: integer
