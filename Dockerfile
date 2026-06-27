@@ -9,7 +9,7 @@ COPY lib/api-zod/package.json lib/api-zod/package.json
 COPY lib/db/package.json lib/db/package.json
 COPY scripts/package.json scripts/package.json
 COPY artifacts/api-server/package.json artifacts/api-server/package.json
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 FROM base AS build
 WORKDIR /app
