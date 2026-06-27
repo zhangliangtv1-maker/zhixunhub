@@ -1,7 +1,7 @@
 FROM node:22-slim AS base
 WORKDIR /app
 ENV PNPM_HOME="/pnpm" PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm@10
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
 COPY lib/api-client-react/package.json lib/api-client-react/package.json
 COPY lib/api-spec/package.json lib/api-spec/package.json
