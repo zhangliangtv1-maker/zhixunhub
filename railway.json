@@ -1,6 +1,6 @@
 {
   "build": {
-    "buildCommand": "pnpm install && pnpm --filter @workspace/api-server run build"
+    "buildCommand": "npm install -g pnpm && pnpm install && pnpm --filter @workspace/api-server run build"
   },
   "deploy": {
     "startCommand": "cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs"
